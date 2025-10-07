@@ -1,8 +1,9 @@
 # ISA  
 Memory: 8 bit addresses; size of 8 bit values  
 Registers: 16 8 bit registers; r1..rF; r0 is zero register, rF is used by pseudo instructions as auxiliary memory  
-Instruction memory: 8 bit addresses, 16 bit instructions   
+Instruction memory: 12 bit addresses, 16 bit instructions   
 Call stack: Size of 64 8 bit addresses  
+Flags: result flag
 Instructions (r1..f are registers, a1.. are instruction addresses, m1.. are memory addresses, v1.. are raw 8 bit values):  
 
 | Instruction | Operation |
@@ -18,12 +19,21 @@ Instructions (r1..f are registers, a1.. are instruction addresses, m1.. are memo
 | LSH 1000 r1 r2 r3 | Bitwise left shift r2 by r3 places, store in r1 |
 | RSH 1001 r1 r2 r3 | Bitwise right shift r2 by r3 places, store in r1 |
 | RET 1010 XXXX XXXX XXXX | Return to address at top of call stack, pop from call stack |
-| BIZ 1011 r1 a1 | If r1 is 0 run JMP a1, push a1 to call stack |
+| BIR 1011 a1 | If result flag is set jump to a1, push a1 to call stack |
 | LDM 1100 r1 r2 | Load m\[r2\] into r1 |
 | STR 1101 r1 r2 | Store value of r2 in m\[r1\] |
 | LDI 1110 r1 v1 | Load v1 into r1 |
-| CPY 1111 r1 r2 XXXX | Copy r2 into r1 |
+| CMP 1111 r1 r2 r3 | Compare r2 and r3 using the comparison provided in r1, set result flag |
   
+Comparisons
+| Value | Comparison |
+| - | - |
+| 0 | equal |
+| 1 | greater than |
+| 2 | less than |
+| 3 | greater than or equal |
+| 4 | less than or equal |
+
 Pseudo Instructions  
 
 | Instruction  | Operation                                                    |

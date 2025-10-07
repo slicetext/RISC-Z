@@ -5,9 +5,10 @@ use std::{env, fs::File, io::{self, BufReader, Read}};
 struct RISCZ {
     registers: [u8; 16],
     memory: [u8; 256],
-    inst_memory: [u16; 256],
-    pc: u8,
-    stack: Vec<u8>,
+    inst_memory: [u16; 4096],
+    pc: u16,
+    stack: Vec<u16>,
+    result_flag: bool,
 }
 
 impl RISCZ {
@@ -15,9 +16,10 @@ impl RISCZ {
         return RISCZ {
             registers: [0; 16],
             memory: [0; 256],
-            inst_memory: [0; 256],
+            inst_memory: [0; 4096],
             pc: 0,
             stack: Vec::new(),
+            result_flag: false,
         };
     }
 
@@ -64,8 +66,8 @@ impl RISCZ {
         self.pc = self.stack.pop().expect("Called RET (return) on an empty stack");
     }
 
-    fn OP_BIZ(&mut self, r1: u8, a1: u8) {
-        if self.registers[r1 as usize] == 0 {
+    fn OP_BIR(&mut self, a1: u16) {
+        if self.result_flag {
             self.stack.push(a1);
             self.pc = a1;
         }
@@ -83,8 +85,15 @@ impl RISCZ {
         self.registers[r1 as usize] = v1;
     }
 
-    fn OP_CPY(&mut self, r1: u8, r2: u8) {
-        self.registers[r1 as usize] = self.registers[r2 as usize];
+    fn OP_CMP(&mut self, r1: u8, r2: u8, r3: u8) {
+        self.result_flag = match r1 {
+            0 => self.registers[r2 as usize] == self.registers[r3 as usize],
+            1 => self.registers[r2 as usize] > self.registers[r3 as usize],
+            2 => self.registers[r2 as usize] < self.registers[r3 as usize],
+            3 => self.registers[r2 as usize] >= self.registers[r3 as usize],
+            4 => self.registers[r2 as usize] <= self.registers[r3 as usize],
+            _ => panic!("Invalid comparison type"),
+        }
     }
 }
 
