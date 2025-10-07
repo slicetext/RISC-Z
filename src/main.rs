@@ -96,3 +96,13 @@ fn main() {
     let mut buffer = Vec::new();
     reader.read_to_end(&mut buffer).expect("Failed to read file");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn add() {
+        let mut cpu = RISCZ::new();
+    }
+}
