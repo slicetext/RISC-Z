@@ -23,7 +23,49 @@ impl RISCZ {
         };
     }
 
-    fn OP_NOP() {
+    fn load_file(&mut self, filename: &str) {
+        let f = File::open(filename).expect("File not found");
+        let mut reader = BufReader::new(f);
+        let mut buffer = Vec::new();
+        reader.read_to_end(&mut buffer).expect("Failed to read file");
+        // Convert Vec<u8> to u16's in the inst memory
+        for i in 0..(buffer.len() / 2) {
+            self.inst_memory[i] = ((buffer[i * 2] as u16) << 8) | buffer[i * 2 + 1] as u16;
+        }
+    }
+
+    fn tick(&mut self) {
+        let opcode = (self.inst_memory[self.pc as usize] & 0xF000) >> 12;
+        let r1 = ((self.inst_memory[self.pc as usize] & 0x0F00) >> 8) as u8;
+        let r2 = ((self.inst_memory[self.pc as usize] & 0x00F0) >> 8) as u8;
+        let r3 = ((self.inst_memory[self.pc as usize] & 0x000F) >> 8) as u8;
+        let a1 = (self.inst_memory[self.pc as usize] & 0x0FFF) >> 0;
+        let v1 = ((self.inst_memory[self.pc as usize] & 0x00FF) >> 0) as u8;
+
+        self.pc += 1;
+
+        match opcode {
+            0x0 => self.OP_NOP(),
+            0x1 => self.OP_ADD(r1, r2, r3),
+            0x2 => self.OP_SUB(r1, r2, r3),
+            0x3 => self.OP_DIV(r1, r2, r3),
+            0x4 => self.OP_AND(r1, r2, r3),
+            0x5 => self.OP_ORR(r1, r2, r3),
+            0x6 => self.OP_XOR(r1, r2, r3),
+            0x7 => self.OP_NOT(r1, r2),
+            0x8 => self.OP_LSH(r1, r2, r3),
+            0x9 => self.OP_RSH(r1, r2, r3),
+            0xA => self.OP_RET(),
+            0xB => self.OP_BIR(a1),
+            0xC => self.OP_LDM(r1, r2),
+            0xD => self.OP_STR(r1, r2),
+            0xE => self.OP_LDI(r1, v1),
+            0xF => self.OP_CMP(r1, r2, r3),
+            _ => panic!("Invalid opcode {} on line {}", opcode, self.pc),
+        }
+    }
+
+    fn OP_NOP(&mut self) {
     }
 
     fn OP_ADD(&mut self, r1: u8, r2: u8, r3: u8) {
@@ -100,10 +142,11 @@ impl RISCZ {
 fn main() {
     let args: Vec<String> = env::args().collect();
     let filename = &args[1];
-    let f = File::open(filename).expect("File not found");
-    let mut reader = BufReader::new(f);
-    let mut buffer = Vec::new();
-    reader.read_to_end(&mut buffer).expect("Failed to read file");
+    let mut riscz = RISCZ::new();
+    riscz.load_file(filename);
+    while (riscz.pc as usize) < riscz.inst_memory.len() {
+        riscz.tick();
+    }
 }
 
 #[cfg(test)]
