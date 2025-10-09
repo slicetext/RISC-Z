@@ -134,6 +134,7 @@ impl RISCZ {
             2 => self.registers[r2 as usize] < self.registers[r3 as usize],
             3 => self.registers[r2 as usize] >= self.registers[r3 as usize],
             4 => self.registers[r2 as usize] <= self.registers[r3 as usize],
+            5 => self.registers[r2 as usize] != self.registers[r3 as usize],
             _ => panic!("Invalid comparison type"),
         }
     }
