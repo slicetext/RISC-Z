@@ -33,6 +33,7 @@ Comparisons
 | 2 | less than |
 | 3 | greater than or equal |
 | 4 | less than or equal |
+| 5 | not equal |
 
 Pseudo Instructions  
 
@@ -43,3 +44,4 @@ Pseudo Instructions
 | JMP a1       | Jump to a1 (BIZ r0 a1)                                       |
 | INC r1       | Increment r1 (LDI 1 rF; ADD r1 rF r1)                        |
   
+
