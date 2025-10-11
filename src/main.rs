@@ -1,25 +1,27 @@
 #![allow(non_snake_case)]
 
-use std::{env, fs::File, io::{self, BufReader, Read}};
+use std::{env, fs::File, io::{BufReader, Read}};
 
 struct RISCZ {
     registers: [u8; 16],
-    memory: [u8; 256],
+    memory: [[u8; 256]; 256],
     inst_memory: [u16; 4096],
     pc: u16,
     stack: Vec<u16>,
     result_flag: bool,
+    mem_page: u8,
 }
 
 impl RISCZ {
     fn new() -> Self {
         return RISCZ {
             registers: [0; 16],
-            memory: [0; 256],
+            memory: [[0; 256]; 256],
             inst_memory: [0; 4096],
             pc: 0,
             stack: Vec::new(),
             result_flag: false,
+            mem_page: 0,
         };
     }
 
@@ -29,8 +31,10 @@ impl RISCZ {
         let mut buffer = Vec::new();
         reader.read_to_end(&mut buffer).expect("Failed to read file");
         // Convert Vec<u8> to u16's in the inst memory
-        for i in 0..(buffer.len() / 2) {
-            self.inst_memory[i] = ((buffer[i * 2] as u16) << 8) | buffer[i * 2 + 1] as u16;
+        for i in (0..buffer.len()).step_by(2) {
+            self.inst_memory[i] = ((buffer[i] as u16) << 8) | buffer[i + 1] as u16;
+            if buffer[i] != 0 {
+            }
         }
     }
 
@@ -45,27 +49,24 @@ impl RISCZ {
         self.pc += 1;
 
         match opcode {
-            0x0 => self.OP_NOP(),
-            0x1 => self.OP_ADD(r1, r2, r3),
-            0x2 => self.OP_SUB(r1, r2, r3),
-            0x3 => self.OP_DIV(r1, r2, r3),
-            0x4 => self.OP_AND(r1, r2, r3),
-            0x5 => self.OP_ORR(r1, r2, r3),
-            0x6 => self.OP_XOR(r1, r2, r3),
-            0x7 => self.OP_NOT(r1, r2),
-            0x8 => self.OP_LSH(r1, r2, r3),
-            0x9 => self.OP_RSH(r1, r2, r3),
-            0xA => self.OP_RET(),
-            0xB => self.OP_BIR(a1),
-            0xC => self.OP_LDM(r1, r2),
-            0xD => self.OP_STR(r1, r2),
-            0xE => self.OP_LDI(r1, v1),
-            0xF => self.OP_CMP(r1, r2, r3),
+            0x0 => self.OP_ADD(r1, r2, r3),
+            0x1 => self.OP_SUB(r1, r2, r3),
+            0x2 => self.OP_DIV(r1, r2, r3),
+            0x3 => self.OP_AND(r1, r2, r3),
+            0x4 => self.OP_ORR(r1, r2, r3),
+            0x5 => self.OP_XOR(r1, r2, r3),
+            0x6 => self.OP_NOT(r1, r2),
+            0x7 => self.OP_LSH(r1, r2, r3),
+            0x8 => self.OP_RSH(r1, r2, r3),
+            0x9 => self.OP_RET(),
+            0xA => self.OP_BIR(a1),
+            0xB => self.OP_LDM(r1, r2),
+            0xC => self.OP_STR(r1, r2),
+            0xD => self.OP_LDI(r1, v1),
+            0xE => self.OP_CMP(r1, r2, r3),
+            0xF => self.OP_SPG(r1),
             _ => panic!("Invalid opcode {} on line {}", opcode, self.pc),
         }
-    }
-
-    fn OP_NOP(&mut self) {
     }
 
     fn OP_ADD(&mut self, r1: u8, r2: u8, r3: u8) {
@@ -105,7 +106,10 @@ impl RISCZ {
     }
 
     fn OP_RET(&mut self) {
-        self.pc = self.stack.pop().expect("Called RET (return) on an empty stack");
+        // Do nothing on an empty stack
+        if self.stack.len() > 0 {
+            self.pc = self.stack.pop().unwrap();
+        }
     }
 
     fn OP_BIR(&mut self, a1: u16) {
@@ -116,11 +120,11 @@ impl RISCZ {
     }
 
     fn OP_LDM(&mut self, r1: u8, r2: u8) {
-        self.registers[r1 as usize] = self.memory[self.registers[r2 as usize] as usize];
+        self.registers[r1 as usize] = self.memory[self.mem_page as usize][self.registers[r2 as usize] as usize];
     }
 
     fn OP_STR(&mut self, r1: u8, r2: u8) {
-        self.memory[self.registers[r1 as usize] as usize] = self.registers[r2 as usize];
+        self.memory[self.mem_page as usize][self.registers[r1 as usize] as usize] = self.registers[r2 as usize];
     }
 
     fn OP_LDI(&mut self, r1: u8, v1: u8) {
@@ -128,7 +132,7 @@ impl RISCZ {
     }
 
     fn OP_CMP(&mut self, r1: u8, r2: u8, r3: u8) {
-        self.result_flag = match r1 {
+        self.result_flag = match self.registers[r1 as usize] {
             0 => self.registers[r2 as usize] == self.registers[r3 as usize],
             1 => self.registers[r2 as usize] > self.registers[r3 as usize],
             2 => self.registers[r2 as usize] < self.registers[r3 as usize],
@@ -137,6 +141,10 @@ impl RISCZ {
             5 => self.registers[r2 as usize] != self.registers[r3 as usize],
             _ => panic!("Invalid comparison type"),
         }
+    }
+
+    fn OP_SPG(&mut self, r1: u8) {
+        self.mem_page = self.registers[r1 as usize];
     }
 }
 
