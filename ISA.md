@@ -4,6 +4,7 @@ Registers: 16 8 bit registers; r1..rF; r0 is zero register, rF is used by pseudo
 Instruction memory: 12 bit addresses, 16 bit instructions   
 Call stack: Size of 64 8 bit addresses  
 Flags: result flag, memory page (u8)
+Graphics: Memory page 255 address $0 to $255 represent the 16x16 display, with each value representing an 8 bit color
 Instructions (r1..f are registers, a1.. are instruction addresses, m1.. are memory addresses, v1.. are raw 8 bit values):  
 
 | Instruction | Operation |
