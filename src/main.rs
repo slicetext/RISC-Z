@@ -72,6 +72,11 @@ impl RISCZ {
             0xF => self.OP_SPG(r1),
             _ => panic!("Invalid opcode {} on line {}", opcode, self.pc),
         }
+
+        // If branch, decrease pc
+        if opcode == 0xA {
+            self.pc -= 1;
+        }
     }
 
     fn read_reg(&self, reg_number: u8) -> u8{
@@ -91,7 +96,7 @@ impl RISCZ {
     }
 
     fn OP_DIV(&mut self, r1: u8, r2: u8, r3: u8) {
-        self.registers[r1 as usize] = self.read_reg(r2).wrapping_div(self.read_reg(r3));
+        self.registers[r1 as usize] = self.read_reg(r2) / self.read_reg(r3);
     }
 
     fn OP_AND(&mut self, r1: u8, r2: u8, r3: u8) {
@@ -146,7 +151,7 @@ impl RISCZ {
     }
 
     fn OP_CMP(&mut self, r1: u8, r2: u8, r3: u8) {
-        self.result_flag = match self.registers[r1 as usize] {
+        self.result_flag = match self.read_reg(r1) {
             0 => self.read_reg(r2) == self.read_reg(r3),
             1 => self.read_reg(r2) > self.read_reg(r3),
             2 => self.read_reg(r2) < self.read_reg(r3),
