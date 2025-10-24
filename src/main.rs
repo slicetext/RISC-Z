@@ -72,11 +72,6 @@ impl RISCZ {
             0xF => self.OP_SPG(r1),
             _ => panic!("Invalid opcode {} on line {}", opcode, self.pc),
         }
-
-        // If branch, decrease pc
-        if opcode == 0xA {
-            self.pc -= 1;
-        }
     }
 
     fn read_reg(&self, reg_number: u8) -> u8{
@@ -134,6 +129,7 @@ impl RISCZ {
         if self.result_flag {
             self.stack.push(a1);
             self.pc = a1;
+            self.pc -= 1;
         }
     }
 
