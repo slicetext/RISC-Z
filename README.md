@@ -12,7 +12,13 @@ A Reduced Instruction Set Computer (RISC) ascribes to the theory that a computer
 You can view more details about the architecture of this project [here](./ISA.md)
 
 ## Installation
-This project is meant to work with the [RISC-Z assembler](https://github.com/slicetext/RISCZ-asm). Both of these projects are built with rust. `git clone` both repositories and build the projects with `cargo build`.
+This project is meant to work with the [RISC-Z assembler](https://github.com/slicetext/RISCZ-asm). Both of these projects are built with cargo.
+```bash
+git clone github.com/slicetext/RISC-Z.git
+git clone github.com/slicetext/RISCZ-asm.git
 
+cd RISC-Z && cargo install & cd ..
+cd RISCZ-asm && cargo install & cd..
+```
 ## Usage
 Run `cargo run -- filename`.
