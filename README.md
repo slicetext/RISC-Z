@@ -1,7 +1,9 @@
 # RISC-Z
 A RISC architecture for a virtual machine.
 
-The machine has 256 pages of memory that each have 256 addresses, giving a total of 65 kilobytes of addressable memory. It has 15 8-bit registers and a zero registter (a register that discards the value put into it and always contains zero).
+The machine has 256 pages of memory that each have 256 addresses, giving a total of 65 kilobytes of addressable memory. It has 15 8-bit general purpose registers and a zero register (a register that discards the value put into it and always contains zero).
+
+The machine supports 16 2 byte long fixed length instructions. They perform operations on the registers and only the Load and Store commands can affect memory.
 <p align="center"><img width="512" height="384" alt="r0" style="text-align: center" src="https://github.com/user-attachments/assets/6a76d116-859d-4134-a6c5-c22c0bc39f65" /></p>
 
 
